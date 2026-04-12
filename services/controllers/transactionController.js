@@ -71,12 +71,12 @@ const createTransaction = async (req, res) => {
             if (type === "withdraw") {
 
                 // ❌ Minimum check
-                if (user.wallet < 100) {
-                    return res.status(400).json({
-                        success: false,
-                        message: "Minimum wallet balance should be $100 to withdraw"
-                    });
-                }
+                // if (user.wallet < 100) {
+                //     return res.status(400).json({
+                //         success: false,
+                //         message: "Minimum wallet balance should be $100 to withdraw"
+                //     });
+                // }
 
                 // ❌ balance check
                 if (user.wallet < amount) {

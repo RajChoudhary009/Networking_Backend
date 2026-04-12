@@ -7,8 +7,8 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "hemankishere@gmail.com";
-// const ADMIN_EMAIL = "raaz02256@gmail.com";
+// const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "hemankishere@gmail.com";
+const ADMIN_EMAIL = "admin.global.trade@gmail.com";
 
 // 🔥 Multer setup (unchanged)
 const storage = multer.diskStorage({
@@ -670,6 +670,56 @@ const contactAdmin = async (req, res) => {
 };
 
 
+const deleteUserByEmail = async (req, res) => {
+    console.log("delete user", email)
+    try {
+        const { email } = req.body;
+
+        // ✅ Email check
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required"
+            });
+        }
+
+        // ✅ User find
+        const user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // ✅ File delete (agar userScanner hai)
+        if (user.userScanner) {
+            const filePath = path.join(__dirname, "..", "..", "uploads", user.userScanner);
+
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        // ✅ User delete
+        await user.destroy();
+
+        return res.status(200).json({
+            success: true,
+            message: "User and scanner file deleted successfully"
+        });
+
+    } catch (error) {
+        console.error("Delete User Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
+
+
 const updateUserByEmail = async (req, res) => {
     try {
         const { email, name, role, password, rankId } = req.body;
@@ -735,4 +785,80 @@ const updateUserByEmail = async (req, res) => {
     }
 };
 
-module.exports = { createUser, updateUserDetails, login, adminLogin, logout, getExitingUsers, getUsers, getUserById, getUserTree, forgotPassword, contactAdmin, updateUserByEmail };
+// only admin
+const updateUserDetailsByAdmin = async (req, res) => {
+    console.log("updateUserDetails");
+
+    upload.single('userScanner')(req, res, async function (err) {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+                message: "File upload failed",
+                error: err.message
+            });
+        }
+
+        try {
+            const { userId } = req.params;
+
+            const user = await User.findOne({ where: { userId } });
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found"
+                });
+            }
+
+            const {
+                paymentAddress,
+                name,
+                rankId,
+                role
+            } = req.body;
+
+            const updateData = {};
+
+            // 🧾 normal fields
+            if (paymentAddress !== undefined) updateData.paymentAddress = paymentAddress;
+            if (name !== undefined) updateData.name = name;
+            if (role !== undefined) updateData.role = role;
+
+            if (rankId !== undefined) {
+                const parsedRankId = parseInt(rankId);
+                if (!isNaN(parsedRankId) && parsedRankId > 0) {
+                    updateData.rankId = parsedRankId;
+                }
+            }
+
+            // 📷 ONLY IF FILE COMES
+            if (req.file) {
+                // delete old file
+                if (user.userScanner && fs.existsSync(user.userScanner)) {
+                    fs.unlinkSync(user.userScanner);
+                }
+
+                updateData.userScanner = `uploads/${req.file.filename}`;
+            }
+
+            // 🔥 update only changed fields
+            await user.update(updateData);
+
+            return res.status(200).json({
+                success: true,
+                message: "User updated successfully",
+                data: user
+            });
+
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+                success: false,
+                message: "Server error",
+                error: error.message
+            });
+        }
+    });
+};
+
+module.exports = { createUser, updateUserDetails, login, adminLogin, logout, getExitingUsers, getUsers, getUserById, getUserTree, forgotPassword, contactAdmin, deleteUserByEmail, updateUserByEmail, updateUserDetailsByAdmin };

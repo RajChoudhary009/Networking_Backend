@@ -16,16 +16,14 @@ app.use(cors({
   origin: [
     "http://localhost:3000",
     "http://localhost:3001",
-    // "https://admin.matteo-bianchi.com",
-    // "https://matteo-bianchi.com"
+    "https://admin.globel.co.in",
+    "https://globel.co.in"
   ],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
 
-// IMPORTANT: Allow preflight requests
-// app.options("*", cors());
 
 app.use(cookieParser()); 
 app.use(express.json());
@@ -37,6 +35,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static("uploads"));
+
+// IMPORTANT: Allow preflight requests
+// app.options("*", cors());
+
 
 const userRoutes = require("./services/routes/User");
 const transactionRoutes = require("./services/routes/transaction");
