@@ -97,7 +97,7 @@ const createUser = async (req, res) => {
             const COMPANY_URL = process.env.COMPANY_URL || "https://globel.co.in/login";
             // const COMPANY_LOGO = process.env.COMPANY_LOGO || "https://www.kasandbox.org/programming-images/avatars/leaf-blue.png";
             const COMPANY_LOGO = process.env.COMPANY_LOGO || "https://formidable-maroon-qfckb5wifo.edgeone.app/images.jpeg";
-           
+
             await sendMail({
                 to: email,
                 subject: `Welcome to ${COMPANY_NAME}`,
@@ -732,7 +732,7 @@ const deleteUserByEmail = async (req, res) => {
 
 const updateUserByEmail = async (req, res) => {
     try {
-        const { email, name, role, password, rankId } = req.body;
+        const { email, name, role, password, rankId, investment, wallet } = req.body;
 
         if (!email) {
             return res.status(400).json({
@@ -754,22 +754,50 @@ const updateUserByEmail = async (req, res) => {
         if (name !== undefined) {
             user.name = name;
         }
-        
+
         if (role !== undefined) {
             user.role = role;
         }
 
         if (rankId !== undefined) {
             const parsedRankId = parseInt(rankId);
-        
+
             if (isNaN(parsedRankId) || parsedRankId <= 0) {
                 return res.status(400).json({
                     success: false,
                     message: "rankId must be a positive integer"
                 });
             }
-        
+
             user.rankId = parsedRankId;
+        }
+
+        // 💰 Investment update
+        if (investment !== undefined) {
+            const parsedInvestment = parseFloat(investment);
+
+            if (isNaN(parsedInvestment) || parsedInvestment < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Investment must be a valid positive number"
+                });
+            }
+
+            user.investment = parsedInvestment;
+        }
+
+        // 💳 Wallet update
+        if (wallet !== undefined) {
+            const parsedWallet = parseFloat(wallet);
+
+            if (isNaN(parsedWallet) || parsedWallet < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Wallet must be a valid positive number"
+                });
+            }
+
+            user.wallet = parsedWallet;
         }
 
         // 🔐 Password hash karke save karo
