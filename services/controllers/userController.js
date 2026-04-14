@@ -93,19 +93,20 @@ const createUser = async (req, res) => {
             });
 
             // 🔥 Send welcome email with User ID and Password
-            const COMPANY_NAME = process.env.MY_GLOBAL_APP || "LP Cloud ";
-            const COMPANY_URL = process.env.COMPANY_URL || "http://global.win";
-            const COMPANY_LOGO = process.env.COMPANY_LOGO || "https://www.kasandbox.org/programming-images/avatars/leaf-blue.png";
-
+            const COMPANY_NAME = process.env.MY_GLOBAL_APP || "GLOBEL";
+            const COMPANY_URL = process.env.COMPANY_URL || "https://globel.co.in/login";
+            // const COMPANY_LOGO = process.env.COMPANY_LOGO || "https://www.kasandbox.org/programming-images/avatars/leaf-blue.png";
+            const COMPANY_LOGO = process.env.COMPANY_LOGO || "https://formidable-maroon-qfckb5wifo.edgeone.app/images.jpeg";
+           
             await sendMail({
                 to: email,
                 subject: `Welcome to ${COMPANY_NAME}`,
                 html: `
                 <div style="font-family: Arial, sans-serif; background:#f4f4f4; width:100%; box-sizing:border-box;">
-                    <div width:100%; margin:0; background:#fff; padding:15px; border-radius:8px; text-align:center; box-sizing:border-box;">
+                    <div style="width:100%; margin:0; background:#fff; padding:15px; border-radius:8px; text-align:left; box-sizing:border-box;">
                         
                         <!-- Logo -->
-                        <img src="${COMPANY_LOGO}" width="120" style="display:block; margin:0 auto 20px auto;" />
+                        <img src="${COMPANY_LOGO}" style=" width="100%" style="display:block; margin:0 auto 20px auto;" />
                         </b>
                         <h1 style="color:#333; margin-bottom:5px; font-size:20px";>Hey ${newUser.name} 👋</h1>
                         <h2 style="color:#333; margin-top:0;">🎉 Congratulations!</h2>
@@ -558,14 +559,14 @@ const forgotPassword = async (req, res) => {
         // 🔹 Send email
         await sendMail({
             to: user.email,
-            subject: "Forgot Password - GLOBAL",
+            subject: "Forgot Password - GLOBEL",
             html: `
             <div style="font-family: Arial, sans-serif; background: #f5f6fa; padding: 20px;">
               <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                 
                 <!-- HEADER -->
                 <div style="background: linear-gradient(90deg, #6366f1, #a855f7); padding: 20px; color: white; text-align: center;">
-                  <h2 style="margin: 0; font-size: 28px;">GLOBAL</h2>
+                  <h2 style="margin: 0; font-size: 28px;">GLOBEL</h2>
                 </div>
         
                 <!-- BODY -->
@@ -585,7 +586,7 @@ const forgotPassword = async (req, res) => {
                   Use this password to login and set a new one to keep your account.
                   </p>
         
-                  <a href="http://localhost:3000/login" 
+                  <a href="https://globel.co.in/login" 
                      style="display: inline-block; margin-top: 20px; padding: 12px 25px; background: #a855f7; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
                     Login Now
                   </a>
@@ -622,6 +623,15 @@ const contactAdmin = async (req, res) => {
             });
         }
 
+        const user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "No account found with this Email. Please use your registered email or check your details."
+            });
+        }
+
         // 🔹 Send Mail to Admin
         await sendMail({
             to: ADMIN_EMAIL,
@@ -639,6 +649,7 @@ const contactAdmin = async (req, res) => {
                 <div style="padding: 20px;">
                   <p><b>Name:</b> ${name}</p>
                   <p><b>Email:</b> ${email}</p>
+                  <p><b>User Id:</b> ${user.userCode}</p>
                   <p><b>Message:</b></p>
                   <div style="background:#f1f3f6; padding:10px; border-radius:5px;">
                     ${message}
@@ -647,7 +658,7 @@ const contactAdmin = async (req, res) => {
 
                 <!-- FOOTER -->
                 <div style="background:#f9f9f9; padding:10px; text-align:center; font-size:12px; color:#888;">
-                  GLOBAL Platform Notification
+                  GLOBEL Platform Notification
                 </div>
 
               </div>
@@ -671,7 +682,6 @@ const contactAdmin = async (req, res) => {
 
 
 const deleteUserByEmail = async (req, res) => {
-    console.log("delete user", email)
     try {
         const { email } = req.body;
 
@@ -814,7 +824,8 @@ const updateUserDetailsByAdmin = async (req, res) => {
                 paymentAddress,
                 name,
                 rankId,
-                role
+                role,
+                email
             } = req.body;
 
             const updateData = {};
@@ -823,6 +834,7 @@ const updateUserDetailsByAdmin = async (req, res) => {
             if (paymentAddress !== undefined) updateData.paymentAddress = paymentAddress;
             if (name !== undefined) updateData.name = name;
             if (role !== undefined) updateData.role = role;
+            if (email !== undefined) updateData.email = email;
 
             if (rankId !== undefined) {
                 const parsedRankId = parseInt(rankId);
